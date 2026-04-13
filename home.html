@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - FF ROOM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #0a0f1e 0%, #0c1222 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            padding-bottom: 80px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(18, 25, 45, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        .hero {
+            text-align: center;
+        }
+        h1 {
+            background: linear-gradient(135deg, #E5FFB3, #22c55e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 2rem;
+        }
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            flex: 1;
+            font-weight: bold;
+        }
+        .stat-card span {
+            font-size: 24px;
+            color: #facc15;
+            display: block;
+            margin-top: 8px;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #22c55e;
+            color: black;
+            font-size: 18px;
+        }
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #334155;
+            color: white;
+        }
+        .btn-warning {
+            background: #f59e0b;
+            color: black;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 500px;
+            margin: auto;
+            background: #0f172a;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px;
+            border-top: 1px solid #22c55e;
+        }
+        .bottom-nav button {
+            background: transparent;
+            color: white;
+            border: none;
+            font-size: 16px;
+            padding: 8px;
+            cursor: pointer;
+        }
+        .room-info {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .match-card {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .match-fee {
+            font-size: 20px;
+            font-weight: bold;
+            color: #22c55e;
+        }
+    </style>
+    <script type="module">
+        import { auth, onAuthStateChanged, database, ref, get, signOut } from './firebase-config.js';
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "index.html";
+                return;
+            }
+            currentUser = user;
+            document.getElementById('userEmail').innerText = user.email;
+            
+            const userRef = ref(database, 'users/' + user.uid);
+            const snapshot = await get(userRef);
+            const data = snapshot.val() || {};
+            
+            document.getElementById('balance').innerText = data.balance || 0;
+            document.getElementById('totalWon').innerText = data.totalEarned || 0;
+            document.getElementById('totalKills').innerText = data.totalKills || 0;
+            document.getElementById('totalWins').innerText = data.totalWins || 0;
+            
+            if (data.approvedRoomId && data.approvedPassword) {
+                document.getElementById('approvedRoomId').innerText = data.approvedRoomId;
+                document.getElementById('approvedPassword').innerText = data.approvedPassword;
+                document.getElementById('roomInfoCard').style.display = 'block';
+            }
+        });
+
+        window.joinMatch = (fee) => {
+            window.location.href = `join-room.html?fee=${fee}`;
+        };
+
+        window.logout = async () => {
+            await signOut(auth);
+            window.location.href = "index.html";
+        };
+        
+        window.copyCredentials = () => {
+            const room = document.getElementById('approvedRoomId').innerText;
+            const pass = document.getElementById('approvedPassword').innerText;
+            navigator.clipboard.writeText(`Room ID: ${room}\nPassword: ${pass}`);
+            alert("Credentials copied!");
+        };
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="card hero">
+        <h1>🔥 FF ROOM</h1>
+        <p>Welcome, <span id="userEmail">---</span></p>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card">💰 Balance<br><span id="balance">0</span></div>
+        <div class="stat-card">🏆 Total Won<br><span id="totalWon">0</span></div>
+        <div class="stat-card">🎯 Kills<br><span id="totalKills">0</span></div>
+        <div class="stat-card">👑 Wins<br><span id="totalWins">0</span></div>
+    </div>
+
+    <div class="card">
+        <h3>🎮 Join Match</h3>
+        <div class="match-card">
+            <div>
+                <strong>🔥 Bronze Match</strong><br>
+                Entry: ₹45<br>
+                Prize: ₹500
+            </div>
+            <button onclick="joinMatch(45)" class="btn-primary" style="width: auto; padding: 10px 20px;">Join</button>
+        </div>
+        <div class="match-card">
+            <div>
+                <strong>💎 Diamond Match</strong><br>
+                Entry: ₹90<br>
+                Prize: ₹1500
+            </div>
+            <button onclick="joinMatch(90)" class="btn-primary" style="width: auto; padding: 10px 20px;">Join</button>
+        </div>
+    </div>
+
+    <div class="card" id="roomInfoCard" style="display:none;">
+        <h3>✅ Your Room Credentials</h3>
+        <div class="room-info">
+            <p><strong>Room ID:</strong> <span id="approvedRoomId"></span></p>
+            <p><strong>Password:</strong> <span id="approvedPassword"></span></p>
+        </div>
+        <button onclick="copyCredentials()" class="btn-secondary">📋 Copy Credentials</button>
+    </div>
+
+    <div class="bottom-nav">
+        <button onclick="location.reload()">🏠 Home</button>
+        <button onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
+        <button onclick="logout()">🚪 Logout</button>
+    </div>
+</div>
+</body>
+</html>

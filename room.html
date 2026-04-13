@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Your Room</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Your Room Details</h1>
+
+<div class="roomBox">
+<p id="roomid"></p>
+<p id="pass"></p>
+</div>
+
+<script>
+
+const rooms = [
+{ id:"123456", pass:"ASH45"},
+{ id:"654321", pass:"ASH90"}
+]
+
+const r = rooms[Math.floor(Math.random()*rooms.length)]
+
+document.getElementById("roomid").innerText="Room ID: "+r.id
+document.getElementById("pass").innerText="Password: "+r.pass
+
+</script>
+
+</body>
+</html>
